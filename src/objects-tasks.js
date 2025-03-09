@@ -152,8 +152,16 @@ function makeWord(lettersObject) {
  *    sellTickets([25, 25, 50]) => true
  *    sellTickets([25, 100]) => false (The seller does not have enough money to give change.)
  */
-function sellTickets(/* queue */) {
-  throw new Error('Not implemented');
+function sellTickets(queue) {
+  let billsOf25 = 0;
+  let canSell = true;
+  queue.forEach((bill) => {
+    if ((bill === 50 && billsOf25 < 1) || (bill === 100 && billsOf25 < 3)) {
+      canSell = false;
+    }
+    billsOf25 += 1;
+  });
+  return canSell;
 }
 
 /**
