@@ -342,32 +342,100 @@ function group(array, keySelector, valueSelector) {
  */
 
 const cssSelectorBuilder = {
-  element(/* value */) {
-    throw new Error('Not implemented');
+  string: '',
+  hasElement: false,
+  hasId: false,
+  hasPseudoElement: false,
+  order: null,
+
+  element(value) {
+    if (this.hasElement) {
+      throw new Error(
+        'Element, id and pseudo-element should not occur more then one time inside the selector'
+      );
+    }
+    this.checkOrder(1);
+    const object = Object.create(this);
+    object.string = `${this.string}${value}`;
+    object.hasElement = true;
+    object.order = 1;
+    return object;
   },
 
-  id(/* value */) {
-    throw new Error('Not implemented');
+  id(value) {
+    if (this.hasId) {
+      throw new Error(
+        'Element, id and pseudo-element should not occur more then one time inside the selector'
+      );
+    }
+    this.checkOrder(2);
+    const object = Object.create(this);
+    object.string = `${this.string}#${value}`;
+    object.hasId = true;
+    object.order = 2;
+    return object;
   },
 
-  class(/* value */) {
-    throw new Error('Not implemented');
+  class(value) {
+    this.checkOrder(3);
+    const object = Object.create(this);
+    object.string = `${this.string}.${value}`;
+    object.order = 3;
+    return object;
   },
 
-  attr(/* value */) {
-    throw new Error('Not implemented');
+  attr(value) {
+    this.checkOrder(4);
+    const object = Object.create(this);
+    object.string = `${this.string}[${value}]`;
+    object.order = 4;
+    return object;
   },
 
-  pseudoClass(/* value */) {
-    throw new Error('Not implemented');
+  pseudoClass(value) {
+    this.checkOrder(5);
+    const object = Object.create(this);
+    object.string = `${this.string}:${value}`;
+    object.order = 5;
+    return object;
   },
 
-  pseudoElement(/* value */) {
-    throw new Error('Not implemented');
+  pseudoElement(value) {
+    if (this.hasPseudoElement) {
+      throw new Error(
+        'Element, id and pseudo-element should not occur more then one time inside the selector'
+      );
+    }
+    this.checkOrder(6);
+    const object = Object.create(this);
+    object.string = `${this.string}::${value}`;
+    object.hasPseudoElement = true;
+    object.order = 6;
+    return object;
   },
 
-  combine(/* selector1, combinator, selector2 */) {
-    throw new Error('Not implemented');
+  combine(selector1, combinator, selector2) {
+    const object = Object.create(this);
+    object.string = `${selector1.stringify()} ${combinator} ${selector2.stringify()}`;
+    return object;
+  },
+
+  stringify() {
+    const result = this.string;
+    this.string = '';
+    this.order = null;
+    this.hasElement = false;
+    this.hasId = false;
+    this.hasPseudoElement = false;
+    return result;
+  },
+
+  checkOrder(order) {
+    if (this.order > order) {
+      throw new Error(
+        `Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element`
+      );
+    }
   },
 };
 
